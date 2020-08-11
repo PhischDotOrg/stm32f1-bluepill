@@ -31,8 +31,6 @@ set(TARGET_SRC
 
 set(STM32_BOARD   STM32F1_BluePill    CACHE STRING "STM32 Board Type")
 
-add_definitions("-DNO_LOGGING")
-
 ###############################################################################
 # Include a common CMake File that contains the stuff which would normally go
 # in a top-level CMake File.

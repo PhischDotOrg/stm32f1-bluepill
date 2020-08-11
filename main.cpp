@@ -22,10 +22,9 @@
 #include <gpio/GpioEngine.hpp>
 #include <gpio/GpioPin.hpp>
 
-#if !defined(NO_LOGGING)
+#include <stm32/Uart.hpp>
 #include <uart/UartAccess.hpp>
 #include <uart/UartDevice.hpp>
-#endif
 
 #include <tasks/Heartbeat.hpp>
 
@@ -56,10 +55,6 @@ static stm32::Rcc                       rcc(RCC, pllCfg, flash, pwr);
 static stm32::Gpio::A                   gpio_A(rcc);
 static gpio::GpioEngine                 gpio_engine_A(&gpio_A);
 
-/* FIXME It would be nice to be able to write something like below */
-// static gpio::GpioEngine<GPIOA_BASE>     gpio_engine_A(rcc);
-// static gpio::GpioEngine                 gpio_engine_A(GPIOA_BASE, rcc);
-
 static stm32::Gpio::C                   gpio_C(rcc);
 static gpio::GpioEngine                 gpio_engine_C(&gpio_C);
 
@@ -72,12 +67,10 @@ static gpio::GpioPin                    g_led_green(&gpio_engine_C, 13);
 /*******************************************************************************
  * UART
  ******************************************************************************/
-#if !defined(NO_LOGGING)
-static gpio::GpioPin                    uart_tx(&gpio_engine_C, 6);
-static gpio::GpioPin                    uart_rx(&gpio_engine_C, 7);
-static stm32::Uart::Uart6               uart_access(rcc, uart_rx, uart_tx);
+static gpio::GpioPin                    uart_tx(&gpio_engine_A, 2);
+static gpio::GpioPin                    uart_rx(&gpio_engine_A, 3);
+static stm32::Uart::Usart2              uart_access(rcc /* , uart_rx, uart_tx */);
 uart::UartDevice                        g_uart(&uart_access);
-#endif /* !defined(NO_LOGGING) */
 
 /*******************************************************************************
  * Tasks
@@ -106,11 +99,13 @@ int
 main(void) {
     g_led_green.enable(stm32::GpioEngine::e_Output, stm32::GpioEngine::e_None, stm32::GpioEngine::e_Gpio);
 
+    /* FIXME Remove once an I/O-Mux Interface is implemented */
+    uart_rx.enable(stm32::GpioEngine::e_Alternate, stm32::GpioEngine::e_PullUp, stm32::GpioEngine::e_Uart2);
+    uart_tx.enable(stm32::GpioEngine::e_Alternate, stm32::GpioEngine::e_PullUp, stm32::GpioEngine::e_Uart2);
+
     rcc.setMCO(g_mco1, decltype(rcc)::MCOOutput_e::e_PLL, decltype(rcc)::MCOPrescaler_t::e_MCOPre_None);
 
-#if !defined(NO_LOGGING)
-    uart_access.setBaudRate(decltype(uart_access)::e_BaudRate_115200);
-#endif
+    uart_access.setBaudRate(decltype(uart_access)::BaudRate_e::e_115200);
 
     const unsigned sysclk = pllCfg.getSysclkSpeedInHz() / 1000;
     const unsigned ahb    = pllCfg.getAhbSpeedInHz() / 1000;
