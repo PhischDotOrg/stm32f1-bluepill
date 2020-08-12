@@ -100,8 +100,8 @@ main(void) {
     g_led_green.enable(stm32::GpioEngine::e_Output, stm32::GpioEngine::e_None, stm32::GpioEngine::e_Gpio);
 
     /* FIXME Remove once an I/O-Mux Interface is implemented */
-    uart_rx.enable(stm32::GpioEngine::e_Alternate, stm32::GpioEngine::e_PullUp, stm32::GpioEngine::e_Uart2);
-    uart_tx.enable(stm32::GpioEngine::e_Alternate, stm32::GpioEngine::e_PullUp, stm32::GpioEngine::e_Uart2);
+    uart_rx.enable(stm32::GpioEngine::e_Alternate, stm32::GpioEngine::e_None, stm32::GpioEngine::e_Uart2);
+    uart_tx.enable(stm32::GpioEngine::e_Alternate, stm32::GpioEngine::e_None, stm32::GpioEngine::e_Uart2);
 
     rcc.setMCO(g_mco1, decltype(rcc)::MCOOutput_e::e_PLL, decltype(rcc)::MCOPrescaler_t::e_MCOPre_None);
 
