@@ -61,14 +61,14 @@ static gpio::GpioEngine                 gpio_engine_C(&gpio_C);
 /*******************************************************************************
  * LEDs
  ******************************************************************************/
-static gpio::GpioPin                    g_mco1(&gpio_engine_A, 8);
-static gpio::GpioPin                    g_led_green(&gpio_engine_C, 13);
+static gpio::AlternateFnPin             g_mco1(gpio_engine_A, 8);
+static gpio::GpioPin                    g_led_green(gpio_engine_C, 13);
 
 /*******************************************************************************
  * UART
  ******************************************************************************/
-static gpio::GpioPin                    uart_tx(&gpio_engine_A, 2);
-static gpio::GpioPin                    uart_rx(&gpio_engine_A, 3);
+static gpio::AlternateFnPin             uart_tx(gpio_engine_A, 2);
+static gpio::AlternateFnPin             uart_rx(gpio_engine_A, 3);
 static stm32::Uart::Usart2              uart_access(rcc /* , uart_rx, uart_tx */);
 uart::UartDevice                        g_uart(&uart_access);
 
@@ -97,12 +97,6 @@ extern "C" {
 
 int
 main(void) {
-    g_led_green.enable(stm32::GpioEngine::e_Output, stm32::GpioEngine::e_None, stm32::GpioEngine::e_Gpio);
-
-    /* FIXME Remove once an I/O-Mux Interface is implemented */
-    uart_rx.enable(stm32::GpioEngine::e_Alternate, stm32::GpioEngine::e_None, stm32::GpioEngine::e_Uart2);
-    uart_tx.enable(stm32::GpioEngine::e_Alternate, stm32::GpioEngine::e_None, stm32::GpioEngine::e_Uart2);
-
     rcc.setMCO(g_mco1, decltype(rcc)::MCOOutput_e::e_PLL, decltype(rcc)::MCOPrescaler_t::e_MCOPre_None);
 
     uart_access.setBaudRate(decltype(uart_access)::BaudRate_e::e_115200);
