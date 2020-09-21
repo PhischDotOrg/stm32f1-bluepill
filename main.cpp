@@ -69,7 +69,7 @@ static gpio::GpioPin                    g_led_green(gpio_engine_C, 13);
  ******************************************************************************/
 static gpio::AlternateFnPin             uart_tx(gpio_engine_A, 2);
 static gpio::AlternateFnPin             uart_rx(gpio_engine_A, 3);
-static stm32::Uart::Usart2              uart_access(rcc /* , uart_rx, uart_tx */);
+static stm32::Uart::Usart2<gpio::AlternateFnPin>    uart_access(rcc, uart_rx, uart_tx);
 uart::UartDevice                        g_uart(&uart_access);
 
 /*******************************************************************************
