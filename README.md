@@ -11,4 +11,4 @@ $ git clone git@github.com:PhischDotOrg/stm32f1-bluepill.git --recursive
 ```
 
 # How to build
-See the documentation for the common reposority at [https://github.com/PhischDotOrg/stm32f4-common](https://github.com/PhischDotOrg/stm32f4-common).
+See the documentation for the common reposority at [https://github.com/PhischDotOrg/stm32-common](https://github.com/PhischDotOrg/stm32-common).
