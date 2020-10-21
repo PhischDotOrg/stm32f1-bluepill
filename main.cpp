@@ -48,7 +48,8 @@ static const constexpr stm32::PllCfg pllCfg = {
     .m_sysclkSource     = stm32::PllCfg::SysclkSource_t::e_SysclkPLL,
     .m_ahbPrescaler     = stm32::PllCfg::AHBPrescaler_t::e_AHBPrescaler_None,
     .m_apb1Prescaler    = stm32::PllCfg::APBPrescaler_t::e_APBPrescaler_Div16,
-    .m_apb2Prescaler    = stm32::PllCfg::APBPrescaler_t::e_APBPrescaler_None
+    .m_apb2Prescaler    = stm32::PllCfg::APBPrescaler_t::e_APBPrescaler_None,
+    .m_usbPrescaler     = stm32::PllCfg::USBPrescaler_t::e_USBPrescaler_Disabled,
 };
 
 static stm32::Scb                       scb(SCB);
