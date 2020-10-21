@@ -1,5 +1,11 @@
+#!/usr/bin/env groovy
+
 pipeline {
     agent any
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '3'))
+    }
 
     stages {
         stage('Checkout') {
@@ -7,7 +13,7 @@ pipeline {
                 checkout([
                     $class: 'GitSCM',
                     branches: [
-                        [name: '*/master']
+                        [name: "*/${env.BRANCH_NAME}"]
                     ],
                     browser: [
                         $class: 'GithubWeb',
@@ -15,8 +21,7 @@ pipeline {
                     ],
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [
-                        [
-                            $class: 'SubmoduleOption',
+                        [ $class: 'SubmoduleOption',
                             depth: 1,
                             disableSubmodules: false,
                             parentCredentials: true,
@@ -25,7 +30,8 @@ pipeline {
                             shallow: true,
                             threads: 8,
                             trackingSubmodules: false
-                        ]
+                        ],
+                        [ $class: 'CleanCheckout' ]
                     ],
                     submoduleCfg: [
                     ],
@@ -35,20 +41,78 @@ pipeline {
                             url: 'git@github.com:PhischDotOrg/stm32f1-bluepill.git'
                         ]
                     ]
-                ])                
+                ])
             }
         }
         stage('Build') {
-            steps {
-                cmakeBuild buildDir: 'build',
-                  buildType: "Debug",
-                  cleanBuild: true,
-                  cmakeArgs: "-DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/common/Generic_Cortex_M3.ctools",
-                  installation: 'InSearchPath',
-                  sourceDir: "${WORKSPACE}",
-                  steps: [
-                    [ args: 'all' ]
-                  ]
+            matrix {
+                axes {
+                    axis {
+                        name 'STM32_ENVIRONMENT'
+                        values 'Hostbuild',
+                          'STM32'
+                    }
+                    axis {
+                        name 'CMAKE_BUILD_TYPE'
+                        values 'Debug',
+                        //   'Release',
+                          'ReleaseWithDebInfo',
+                          'MinSizeRel'
+                    }
+                }
+                excludes {
+                    exclude {
+                        axis {
+                            name 'STM32_ENVIRONMENT'
+                            values 'Hostbuild'
+                        }
+                        axis {
+                            name 'CMAKE_BUILD_TYPE'
+                            notValues 'Debug'
+                        }
+                    }
+                }
+                stages {
+                    stage('Build') {
+                        steps {
+                            script {
+                                if ("${STM32_ENVIRONMENT}" == "STM32") {
+                                    stage ('CMake Build') {
+                                        cmakeBuild buildDir: "build-${STM32_ENVIRONMENT}-${CMAKE_BUILD_TYPE}",
+                                            buildType: "${CMAKE_BUILD_TYPE}",
+                                            cleanBuild: true,
+                                            cmakeArgs: "-DCMAKE_TOOLCHAIN_FILE=${WORKSPACE}/common/Generic_Cortex_M3.ctools",
+                                            installation: 'InSearchPath',
+                                            sourceDir: "${WORKSPACE}",
+                                            steps: [
+                                                [ args: 'all' ]
+                                            ]
+                                    }
+                                } else if ("${STM32_ENVIRONMENT}" == "Hostbuild") {
+                                    stage ('CMake Build') {
+                                        cmakeBuild buildDir: "build-${STM32_ENVIRONMENT}-${CMAKE_BUILD_TYPE}",
+                                            buildType: "${CMAKE_BUILD_TYPE}",
+                                            cleanBuild: true,
+                                            cmakeArgs: "-DUNITTEST=TRUE",
+                                            installation: 'InSearchPath',
+                                            sourceDir: "${WORKSPACE}",
+                                            steps: [
+                                                [ args: 'all' ]
+                                            ]
+                                    }
+                                } else {
+                                    error("STM_ENVIRONMENT='${STM32_ENVIRONMENT}' is not implemented")
+                                }
+                            }
+                        }
+                    }
+                    stage('Test') {
+                        steps {
+                            ctest installation: 'InSearchPath',
+                                workingDir: "build-${STM32_ENVIRONMENT}-${CMAKE_BUILD_TYPE}"
+                        }
+                    }
+                }
             }
         }
     }

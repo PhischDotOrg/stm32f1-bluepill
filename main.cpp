@@ -64,9 +64,6 @@ static stm32::Pwr                       pwr(rcc, scb);
 static stm32::Gpio::A                   gpio_A(rcc);
 static gpio::GpioEngine                 gpio_engine_A(&gpio_A);
 
-static stm32::Gpio::B                   gpio_B(rcc);
-static gpio::GpioEngine                 gpio_engine_B(&gpio_B);
-
 static stm32::Gpio::C                   gpio_C(rcc);
 static gpio::GpioEngine                 gpio_engine_C(&gpio_C);
 
